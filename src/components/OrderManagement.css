@@ -109,6 +109,36 @@ button.banana {
   color: black;
 }
 
+button.red {
+  background-color: red;
+}
+
+button.blue {
+  background-color: blue;
+}
+
+button.yellow {
+  background-color: yellow;
+  color: black;
+}
+
+button.green {
+  background-color: green;
+}
+
+button.white {
+  background-color: #FFFFDD;
+  color: black;
+}
+
+button.anni-set {
+  background-color: orange;
+}
+
+button.gdsc-set {
+  background-color: #ff6347;
+}
+
 button:hover {
   filter: brightness(0.9);
 }

@@ -7,7 +7,7 @@ import './OrderManagement.css'
 // 型定義
 interface OrderItem {
   id: number
-  item: 'リンゴ' | 'バナナ'
+  item: '単品赤' | '単品青' | '単品黄' | '単品緑' | '単品白' | '150周年記念セット' | 'GDSCセット'
   price: number
   ticketNumber: number
 }
@@ -113,7 +113,7 @@ export default function OrderManagement() {
   }
 
   // 一時的に注文を追加する関数
-  const addTempItem = (item: 'リンゴ' | 'バナナ', price: number) => {
+  const addTempItem = (item: '単品赤' | '単品青' | '単品黄' | '単品緑' | '単品白' | '150周年記念セット' | 'GDSCセット', price: number) => {
     const ticketNumber = nextTicketNumber
     const newItem: OrderItem = { id: Date.now(), item, price, ticketNumber }
     setTempOrderItems([...tempOrderItems, newItem])
@@ -155,8 +155,13 @@ export default function OrderManagement() {
       </div>
       <div className="card-content">
         <div className="button-group">
-          <button onClick={() => addTempItem('リンゴ', 350)} className='apple'>リンゴ ¥350</button>
-          <button onClick={() => addTempItem('バナナ', 200)} className='banana'>バナナ ¥200</button>
+          <button onClick={() => addTempItem('単品赤', 200)} className='red'>単品赤 ¥200</button>
+          <button onClick={() => addTempItem('単品青', 200)} className='blue'>単品青 ¥200</button>
+          <button onClick={() => addTempItem('単品黄', 200)} className='yellow'>単品黄 ¥200</button>
+          <button onClick={() => addTempItem('単品緑', 200)} className='green'>単品緑 ¥200</button>
+          <button onClick={() => addTempItem('単品白', 200)} className='white'>単品白 ¥200</button>
+          <button onClick={() => addTempItem('150周年記念セット', 700)} className='anni-set'>150周年記念セット ¥700</button>
+          <button onClick={() => addTempItem('GDSCセット', 800)} className='gdsc-set'>GDSCセット ¥800</button>
         </div>
         <div className="item-list">
           {tempOrderItems.map((item) => (
@@ -190,6 +195,16 @@ export default function OrderManagement() {
   )
 
   // 調理状況セクションのコンポーネント
+  // クラス名をマッピングするオブジェクト
+  const itemClassNames = {
+    '単品赤': 'red',
+    '単品青': 'blue',
+    '単品黄': 'yellow',
+    '単品緑': 'green',
+    '単品白': 'white',
+    '150周年記念セット': 'anni-set',
+    'GDSCセット': 'gdsc-set',
+  };
   const KitchenSection = () => (
     <div className={getCardClassName()} onClick={() => setConfirmingItemId(null)}>
       <div className="card-header">
@@ -202,7 +217,7 @@ export default function OrderManagement() {
         {orderItems.map((item) => (
           <div
             key={item.id}
-            className={`kitchen-item ${item.item === 'リンゴ' ? 'apple' : 'banana'}`}
+            className={`kitchen-item ${itemClassNames[item.item] || 'default-class'}`}
             onClick={(e) => e.stopPropagation()}
           >
             <span>
