@@ -10,6 +10,7 @@ interface OrderItem {
   item: '単品赤' | '単品青' | '単品黄' | '単品緑' | '単品白' | '150周年記念セット' | 'GDSCセット'
   price: number
   ticketNumber: number
+  status: 'pending' | 'served'
 }
 
 const TICKET_COUNT = 50 // 札の総数
@@ -53,7 +54,8 @@ export default function OrderManagement() {
       id: order.id,
       item: order.item,
       price: order.price,
-      ticketNumber: order.ticket_number
+      ticketNumber: order.ticket_number,
+      status: order.status
     }))
   }
   
@@ -130,11 +132,22 @@ export default function OrderManagement() {
 
   // アイテムを削除する関数
   const removeItem = async (id: number) => {
-    await removeOrderFromDatabase(id)
-    const updatedOrders = await fetchOrdersFromDatabase()
-    setOrderItems(updatedOrders)
-    setConfirmingItemId(null)
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ status: 'served' })
+      .eq('id', id)
+
+  if (error) {
+    console.error('注文の更新に失敗しました', error.message)
+    return
   }
+  
+  const updatedOrders = await fetchOrdersFromDatabase()
+  setOrderItems(updatedOrders)
+  setConfirmingItemId(null)
+
+}
+
 
   // 仮の注文をクリアする関数
   const clearTempOrder = () => {
@@ -143,9 +156,32 @@ export default function OrderManagement() {
 
   // 仮の合計を計算する副作用
   useEffect(() => {
-    const newTempTotal = tempOrderItems.reduce((sum, item) => sum + item.price, 0)
-    setTempTotal(newTempTotal)
-  }, [tempOrderItems])
+    // 初期注文の読み込み
+    const loadInitialOrders = async () => {
+      const orders = await fetchOrdersFromDatabase()
+      if (orders) {
+        setOrderItems(orders)
+      }
+    }
+    loadInitialOrders()
+  
+    // リアルタイムリスナーの設定
+    const channel = supabase
+      .channel('orders')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async () => {
+        const updatedOrders = await fetchOrdersFromDatabase()
+        if (updatedOrders) {
+          setOrderItems(updatedOrders)
+        }
+      })
+      .subscribe()
+  
+    // クリーンアップ関数
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
+  
 
   // 注文入力セクションのコンポーネント
   const OrderSection = () => (
@@ -205,6 +241,9 @@ export default function OrderManagement() {
     '150周年記念セット': 'anni-set',
     'GDSCセット': 'gdsc-set',
   };
+
+  const pendingOrderItems = orderItems.filter(item => item.status === 'pending')
+
   const KitchenSection = () => (
     <div className={getCardClassName()} onClick={() => setConfirmingItemId(null)}>
       <div className="card-header">
