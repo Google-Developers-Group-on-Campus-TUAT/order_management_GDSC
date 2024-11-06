@@ -117,7 +117,7 @@ export default function OrderManagement() {
   // 一時的に注文を追加する関数
   const addTempItem = (item: '単品赤' | '単品青' | '単品黄' | '単品緑' | '単品白' | '150周年記念セット' | 'GDSCセット', price: number) => {
     const ticketNumber = nextTicketNumber
-    const newItem: OrderItem = { id: Date.now(), item, price, ticketNumber }
+    const newItem: OrderItem = { id: Date.now(), item, price, ticketNumber, status: 'pending' }
     setTempOrderItems([...tempOrderItems, newItem])
     setNextTicketNumber(prev => (prev % TICKET_COUNT) + 1)
   }
