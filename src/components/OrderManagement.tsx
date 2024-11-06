@@ -68,7 +68,7 @@ export default function OrderManagement() {
       }
     }
     loadInitialOrders()
-
+  
     // リアルタイムリスナーの設定
     const channel = supabase
       .channel('orders')
@@ -79,12 +79,13 @@ export default function OrderManagement() {
         }
       })
       .subscribe()
-
+  
     // クリーンアップ関数
     return () => {
       supabase.removeChannel(channel)
     }
   }, [])
+  
 
   // Supabaseへのデータ追加関数
   const addOrderToDatabase = async (orderItems: OrderItem[]) => {
@@ -156,32 +157,9 @@ export default function OrderManagement() {
 
   // 仮の合計を計算する副作用
   useEffect(() => {
-    // 初期注文の読み込み
-    const loadInitialOrders = async () => {
-      const orders = await fetchOrdersFromDatabase()
-      if (orders) {
-        setOrderItems(orders)
-      }
-    }
-    loadInitialOrders()
-  
-    // リアルタイムリスナーの設定
-    const channel = supabase
-      .channel('orders')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async () => {
-        const updatedOrders = await fetchOrdersFromDatabase()
-        if (updatedOrders) {
-          setOrderItems(updatedOrders)
-        }
-      })
-      .subscribe()
-  
-    // クリーンアップ関数
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
-  
+    const newTempTotal = tempOrderItems.reduce((sum, item) => sum + item.price, 0)
+    setTempTotal(newTempTotal)
+  }, [tempOrderItems])
 
   // 注文入力セクションのコンポーネント
   const OrderSection = () => (
@@ -242,7 +220,9 @@ export default function OrderManagement() {
     'GDSCセット': 'gdsc-set',
   };
 
-  const pendingOrderItems = orderItems.filter(item => item.status === 'pending')
+  const pendingOrderItems = orderItems
+  .filter(item => item.status === 'pending')
+  .sort((a, b) => a.ticketNumber - b.ticketNumber) // チケット番号で昇順にソート
 
   const KitchenSection = () => (
     <div className={getCardClassName()} onClick={() => setConfirmingItemId(null)}>
@@ -250,10 +230,10 @@ export default function OrderManagement() {
         <h2 className="card-title">調理状況</h2>
       </div>
       <div className="kitchen-total">
-          <span>調理中: {orderItems.length}</span>
+          <span>調理中: {pendingOrderItems.length}</span>
       </div>
       <div className="card-content">
-        {orderItems.map((item) => (
+        {pendingOrderItems.map((item) => (
           <div
             key={item.id}
             className={`kitchen-item ${itemClassNames[item.item] || 'default-class'}`}

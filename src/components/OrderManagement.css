@@ -100,15 +100,6 @@ button.show-component {
   width: 150px;
 }
 
-button.apple {
-  background-color: #ff6347;
-}
-
-button.banana {
-  background-color: #ffd700;
-  color: black;
-}
-
 button.red {
   background-color: red;
 }
@@ -127,7 +118,7 @@ button.green {
 }
 
 button.white {
-  background-color: #FFFFDD;
+  background-color: #FFFF99;
   color: black;
 }
 
@@ -137,6 +128,45 @@ button.anni-set {
 
 button.gdsc-set {
   background-color: #ff6347;
+}
+
+.red {
+  background-color: red;
+  color: white;
+}
+
+.blue {
+  background-color: blue;
+  color: white;
+}
+
+.yellow {
+  background-color: yellow;
+  color: black;
+}
+
+.green {
+  background-color: green;
+  color: white;
+}
+
+.white {
+  background-color: #FFFF99;
+  color: black;
+}
+
+.anni-set {
+  background-color: orange;
+  color:white;
+}
+
+.gdsc-set {
+  background-color: #ff6347;
+  color: white;
+}
+
+.default-class {
+  background-color: #eaeaea;
 }
 
 button:hover {
@@ -219,7 +249,7 @@ button:disabled {
 }
 
 .serve-button {
-  background-color: #ffc107;
+  background-color: white;
   color: #000000;
   padding: 1rem 2rem;
   border-radius: 8px;
@@ -227,8 +257,8 @@ button:disabled {
   width: 100%;
 }
 .confirm-serve-button{
-  background-color: #ff6912;
-  color: #ffffff;
+  background-color: #00FFFF;
+  color: black;
   padding: 1rem 2rem;
   border-radius: 8px;
   font-size: 1.5rem;
