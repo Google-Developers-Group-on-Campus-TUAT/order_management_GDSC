@@ -115,34 +115,35 @@ export default function OrderManagement() {
     }
   }
 
-  // 一時的に注文を追加する関数
-  const addTempItem = async (item: '単品赤' | '単品青' | '単品黄' | '単品緑' | '単品白' | '150周年記念セット' | 'GDSCセット', price: number) => {
-    let ticketNumber: number;
+  // 一時的な注文を追加する関数
+const addTempItem = async (item: '単品赤' | '単品青' | '単品黄' | '単品緑' | '単品白' | '150周年記念セット' | 'GDSCセット', price: number) => {
+  let ticketNumber: number;
 
-    // まだチケット番号が設定されていない場合、最初にサーバーからチケット番号を取得
-    if (nextTicketNumber === 1) {
-      const { data, error } = await supabase.rpc('get_next_ticket_number', {});
-      if (error) {
+  // 仮の注文アイテムが空であれば、サーバーからチケット番号を取得
+  if (tempOrderItems.length === 0) {
+    const { data, error } = await supabase.rpc('get_next_ticket_number', {});
+    if (error) {
       console.error('チケット番号の取得に失敗しました', error.message);
       return;
     }
-
     ticketNumber = data as number;
-    } else {
-      // それ以降は前回のチケット番号をインクリメント
-      ticketNumber = nextTicketNumber;
-    }
 
-    // 新しいアイテムを作成
-    const newItem: OrderItem = { id: Date.now(), item, price, ticketNumber, status: 'pending' };
-
-    // 一時的な注文アイテムを更新
-    setTempOrderItems([...tempOrderItems, newItem]);
+    // 初めてチケット番号を取得した場合、それを基準に次の番号を設定
+    setNextTicketNumber(ticketNumber + 1);
+  } else {
+    // 仮の注文アイテムがある場合は、前回のチケット番号をインクリメント
+    ticketNumber = nextTicketNumber;
 
     // 次のチケット番号をインクリメント
     setNextTicketNumber(prev => (prev % TICKET_COUNT) + 1);
   }
 
+  // 新しいアイテムを作成
+  const newItem: OrderItem = { id: Date.now(), item, price, ticketNumber, status: 'pending' };
+
+  // 一時的な注文アイテムを更新
+  setTempOrderItems([...tempOrderItems, newItem]);
+}
 
   // 注文を確定する関数
   const confirmOrder = async () => {
@@ -159,20 +160,32 @@ export default function OrderManagement() {
       .update({ status: 'served' })
       .eq('id', id)
 
-  if (error) {
-    console.error('注文の更新に失敗しました', error.message)
-    return
-  }
+    if (error) {
+      console.error('注文の更新に失敗しました', error.message)
+      return
+    }
   
-  const updatedOrders = await fetchOrdersFromDatabase()
-  setOrderItems(updatedOrders)
-  setConfirmingItemId(null)
+    const updatedOrders = await fetchOrdersFromDatabase()
+    setOrderItems(updatedOrders)
+    setConfirmingItemId(null)
 
-}
+  }
 
   // 仮の注文をクリアする関数
-  const clearTempOrder = () => {
-    setTempOrderItems([])
+  const clearTempOrder = async () => {
+    // 注文をクリアしたときに最初のチケット番号を再取得
+    const { data, error } = await supabase.rpc('get_next_ticket_number', {});
+    if (error) {
+      console.error('チケット番号の取得に失敗しました', error.message);
+      return;
+    }
+
+    // 取得したチケット番号を基準に、nextTicketNumber を更新
+    const initialTicketNumber = data as number;
+    setNextTicketNumber(initialTicketNumber + 1);
+
+    // 一時的な注文アイテムをクリア
+    setTempOrderItems([]);
   }
 
   // 仮の合計を計算する副作用
